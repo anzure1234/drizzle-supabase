@@ -1,3 +1,5 @@
+import {Button} from "@/components/ui/button";
+
 export default function Home() {
     return (
         <div className="flex min-h-screen flex-col items-center justify-center py-2">
@@ -8,6 +10,7 @@ export default function Home() {
                 <p className="mb-6 text-lg font-medium text-gray-600">
                     A simple starter for Drizzle and Supabase
                 </p>
+                <Button>Click me</Button>
             </main>
         </div>
     )
