@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { signUp } from "@/action/auth.actions"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useFormState } from "react-dom"
+import { useFormState, useFormStatus } from "react-dom"
 import { Button } from "@/components/ui/button"
 import { useEffect, useRef } from "react"
 import { Toaster } from "@/components/ui/toaster"
@@ -129,12 +129,21 @@ export default function SignUpPage() {
                             </FormItem>
                         )}
                     />
-                    <Button type="submit" className="w-full">
-                        Submit
-                    </Button>
+                    <SubmitButton />
+
                 </form>
             </Form>
             <Toaster />
         </>
+    )
+}
+
+function SubmitButton() {
+    const { pending } = useFormStatus()
+
+    return (
+        <Button type="submit" aria-disabled={pending} className="w-full">
+            Sign Up
+        </Button>
     )
 }

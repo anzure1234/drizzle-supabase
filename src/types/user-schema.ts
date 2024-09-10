@@ -1,7 +1,9 @@
 import {z} from "zod";
 
 export const UserSignUpSchema = z.object({
-    username: z.string().min(6, {
+    username: z.string().regex(/^[a-z0-9_-]+$/, {
+        message: "Username can only contain lowercase letters, numbers, underscores, and hyphens"
+    }).min(6, {
         message: "Name must be at least 6 characters long"
     }).max(50, {
         message: "Name must be at most 50 characters long"
@@ -25,7 +27,9 @@ export const UserSignUpSchema = z.object({
 });
 
 export const UserSignInSchema = z.object({
-    username: z.string().min(6).max(50),
+    username: z.string().regex(/^[a-z0-9_-]+$/, {
+        message: "Username can only contain lowercase letters, numbers, underscores, and hyphens"
+    }).min(6).max(50),
     password: z.string().min(8, {
         message: "Password must be at least 8 characters long"
     }).max(50, {

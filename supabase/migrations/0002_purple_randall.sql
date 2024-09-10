@@ -1,0 +1,1 @@
+ALTER TABLE "users_table" ADD COLUMN "updated_at" timestamp NOT NULL;
