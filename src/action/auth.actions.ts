@@ -9,7 +9,6 @@ import {userTable} from "@/drizzle/schema";
 import {lucia} from "@/lib/lucia/auth";
 import {cookies} from "next/headers";
 import {eq} from "drizzle-orm";
-import {redirect} from "next/navigation";
 
 export async function signUp(
     prevState: {
@@ -83,6 +82,10 @@ export async function signUp(
     }
 }
 
+export async function tet() {
+    console.log("Tet");
+}
+
 export async function signIn(
     prevState: {
         message: string;
@@ -90,6 +93,8 @@ export async function signIn(
         issues?: string[];
     },
     formData: FormData) {
+
+    console.log("Sign in", formData);
 
     try {
         const data = Object.fromEntries(formData);
