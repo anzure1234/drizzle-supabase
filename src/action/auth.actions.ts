@@ -6,7 +6,7 @@ import {hash, verify} from "argon2";
 import {generateId} from "lucia";
 import {db} from "@/drizzle/db";
 import {userTable} from "@/drizzle/schema";
-import {lucia} from "@/lib/lucia/auth";
+import {lucia, validateRequest} from "@/lib/lucia/auth";
 import {cookies} from "next/headers";
 import {eq} from "drizzle-orm";
 
@@ -94,7 +94,6 @@ export async function signIn(
     },
     formData: FormData) {
 
-    console.log("Sign in", formData);
 
     try {
         const data = Object.fromEntries(formData);
@@ -165,8 +164,31 @@ export async function signIn(
     }
 }
 
+export async function signOut() {
+    try {
+        const { session } = await validateRequest()
 
+        if (!session) {
+            return {
+                error: "Unauthorized",
+            }
+        }
 
+        await lucia.invalidateSession(session.id)
+
+        const sessionCookie = lucia.createBlankSessionCookie()
+
+        cookies().set(
+            sessionCookie.name,
+            sessionCookie.value,
+            sessionCookie.attributes
+        )
+    } catch (error: any) {
+        return {
+            error: error?.message,
+        }
+    }
+}
 
 
 

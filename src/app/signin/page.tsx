@@ -41,7 +41,7 @@ export default function SignInPage() {
             console.log("State user", state.user)
             toast({
                 title: "User Logged In",
-                description: "The user has been logged in successfully.",
+                description: "The user has been logged in successfully!",
             })
 
             return redirect("/");
