@@ -1,18 +1,32 @@
-'use client'
+"use client";
 
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { UserSignUpSchema } from "@/types/user-schema"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { signUp } from "@/action/auth.actions"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useFormState, useFormStatus } from "react-dom"
-import { Button } from "@/components/ui/button"
-import { useEffect, useRef } from "react"
-import { Toaster } from "@/components/ui/toaster"
-import {useToast} from "@/hooks/use-toast";
+import {
+    Form,
+    FormControl,
+    FormDescription,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { UserSignUpSchema } from "@/types/user-schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { signUp } from "@/action/auth.actions";
+import { Input } from "@/components/ui/input";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { useFormState, useFormStatus } from "react-dom";
+import { Button } from "@/components/ui/button";
+import { useEffect, useRef } from "react";
+import { Toaster } from "@/components/ui/toaster";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SignUpPage() {
     const form = useForm<z.infer<typeof UserSignUpSchema>>({
@@ -23,48 +37,50 @@ export default function SignUpPage() {
             confirmPassword: "",
             role: "user",
         },
-    })
+    });
 
-    const formRef = useRef<HTMLFormElement>(null)
+    const formRef = useRef<HTMLFormElement>(null);
 
     const [state, signUpAction] = useFormState(signUp as any, {
         message: "",
         user: null,
         issues: [],
-    })
+    });
 
-    const { toast } = useToast()
+    const { toast } = useToast();
 
     useEffect(() => {
         if (state?.user) {
-            console.log("State user", state.user)
+            console.log("State user", state.user);
             toast({
                 title: "User Registered",
                 description: "The user has been registered successfully.",
-            })
+            });
         } else if (state?.message && !state?.user) {
             toast({
                 title: "Registration Failed",
                 description: state.message,
                 variant: "destructive",
-            })
+            });
         } else if (state?.issues && state.issues.length > 0) {
             toast({
                 title: "User Registration Failed",
                 description: state.issues.join("\n"),
                 variant: "destructive",
-            })
+            });
         }
-    }, [state, toast])
+    }, [state, toast]);
 
     return (
-        <>
+        <div className="flex items-center justify-center min-h-screen">
             <Form {...form}>
                 <form
                     action={signUpAction}
-                    onSubmit={form.handleSubmit(() => formRef.current?.submit())}
+                    onSubmit={form.handleSubmit(() =>
+                        formRef.current?.submit()
+                    )}
                     ref={formRef}
-                    className="space-y-8 w-full max-w-md mx-auto p-4"
+                    className="space-y-8 w-full max-w-md p-4"
                 >
                     <FormField
                         control={form.control}
@@ -73,7 +89,11 @@ export default function SignUpPage() {
                             <FormItem>
                                 <FormLabel>Username</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Enter your username" {...field} className="w-full" />
+                                    <Input
+                                        placeholder="Enter your username"
+                                        {...field}
+                                        className="w-full"
+                                    />
                                 </FormControl>
                                 <FormDescription className="text-sm">
                                     This is your public display name.
@@ -89,7 +109,12 @@ export default function SignUpPage() {
                             <FormItem>
                                 <FormLabel>Password</FormLabel>
                                 <FormControl>
-                                    <Input type="password" placeholder="Enter your password" {...field} className="w-full" />
+                                    <Input
+                                        type="password"
+                                        placeholder="Enter your password"
+                                        {...field}
+                                        className="w-full"
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -102,7 +127,12 @@ export default function SignUpPage() {
                             <FormItem>
                                 <FormLabel>Confirm Password</FormLabel>
                                 <FormControl>
-                                    <Input type="password" placeholder="Confirm your password" {...field} className="w-full" />
+                                    <Input
+                                        type="password"
+                                        placeholder="Confirm your password"
+                                        {...field}
+                                        className="w-full"
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -114,15 +144,22 @@ export default function SignUpPage() {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Role</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <Select
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                >
                                     <FormControl>
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder="Select a role" />
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        <SelectItem value="user">User</SelectItem>
-                                        <SelectItem value="admin">Admin</SelectItem>
+                                        <SelectItem value="user">
+                                            User
+                                        </SelectItem>
+                                        <SelectItem value="admin">
+                                            Admin
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -130,20 +167,19 @@ export default function SignUpPage() {
                         )}
                     />
                     <SubmitButton />
-
                 </form>
             </Form>
             <Toaster />
-        </>
-    )
+        </div>
+    );
 }
 
 function SubmitButton() {
-    const { pending } = useFormStatus()
+    const { pending } = useFormStatus();
 
     return (
         <Button type="submit" aria-disabled={pending} className="w-full">
             Sign Up
         </Button>
-    )
+    );
 }
