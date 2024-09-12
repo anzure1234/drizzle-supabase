@@ -40,7 +40,8 @@ export default function SignUpPage() {
             console.log("State user", state.user)
             toast({
                 title: "User Registered",
-                description: "The user has been registered successfully.",
+                description: "The user has been registered successfully!!",
+                variant: "success",
             })
         } else if (state?.message && !state?.user) {
             toast({

@@ -118,7 +118,7 @@ export async function signIn(
                 timeCost: 2,
                 outputLen: 32,
                 parallelism: 1
-            });
+            }) ;
 
             if (!validPassword) {
                 return {
