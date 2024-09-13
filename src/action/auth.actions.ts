@@ -28,7 +28,7 @@ export async function signUp(
             const hashedPassword = await hash(parsedData.data.password);
             const userId = generateId(15);
 
-            const result = await db.insert(userTable).values({
+            /*const result = */await db.insert(userTable).values({
                 id: userId,
                 username: parsedData.data.username,
                 hashedPassword
@@ -118,7 +118,7 @@ export async function signIn(
                 timeCost: 2,
                 outputLen: 32,
                 parallelism: 1
-            }) ;
+            });
 
             if (!validPassword) {
                 return {
@@ -166,7 +166,7 @@ export async function signIn(
 
 export async function signOut() {
     try {
-        const { session } = await validateRequest()
+        const {session} = await validateRequest()
 
         if (!session) {
             return {

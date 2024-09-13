@@ -4,7 +4,7 @@ import { cache } from "react";
 import {cookies} from "next/headers";
 import {roleEnums} from "@/drizzle/schema";
 
-export const lucia = new Lucia(adapter, {
+export  const lucia =  new Lucia(adapter, {
     sessionCookie: {
         attributes: {
             // set to `true` when using HTTPS
