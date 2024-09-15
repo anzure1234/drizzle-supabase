@@ -11,8 +11,8 @@ export default async function FoodOrderPage() {
 
     return (
         <div>
-            <FoodOrder/>
-            <h1>Food Order Page</h1>
-        </div>)
+            <FoodOrder user={user}/>
+        </div>
+    )
 
 }

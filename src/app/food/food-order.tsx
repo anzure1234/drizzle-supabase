@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect, useState} from "react"
+import React, {useEffect, useState} from "react"
 import {addDays, eachDayOfInterval, format, isAfter, isBefore, isSameDay, isWeekend, set, startOfWeek} from "date-fns"
 import {Button} from "@/components/ui/button"
 import {Card, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card"
@@ -15,14 +15,25 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {deleteOrderByDateAndId, saveOrder} from "@/drizzle/actions";
+import {User} from "lucia";
 
-export default function FoodOrder() {
+interface FoodOrderProps {
+    user: User;
+}
+
+// const FoodOrder: React.FC<FoodOrderProps> = ({ user }) => {
+//     // component logic
+// };
+
+export default function FoodOrder({user}: FoodOrderProps) {
 
     const [orders, setOrders] = useState<Map<string, { id: number; name: string }>>(new Map())
     const [selectedDate, setSelectedDate] = useState<Date | null>(null)
     const [isMealDialogOpen, setIsMealDialogOpen] = useState(false)
     const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false)
     const [currentTime, setCurrentTime] = useState(new Date())
+    const [orderData, setOrderData] = useState<Array<{ userId: string, date: string, mealId: number }>>([])
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000)
@@ -31,8 +42,8 @@ export default function FoodOrder() {
 
     const meals = [
         {id: 1, name: "Grilled Chicken Salad", description: "Fresh greens with grilled chicken breast"},
-        {id: 2, name: "Vegetarian Pasta", description: "Penne pasta with mixed vegetables in tomato sauce"},
-        {id: 3, name: "Fish and Chips", description: "Crispy battered fish with golden fries"},
+        // {id: 2, name: "Vegetarian Pasta", description: "Penne pasta with mixed vegetables in tomato sauce"},
+        // {id: 3, name: "Fish and Chips", description: "Crispy battered fish with golden fries"},
     ]
 
     const currentWeekStart = startOfWeek(currentTime, {weekStartsOn: 1})
@@ -57,29 +68,46 @@ export default function FoodOrder() {
         }
     }
 
-    const handleOrderClick = (meal: { id: number; name: string }) => {
+    const handleOrderClick = async (meal: { id: number; name: string }) => {
         if (selectedDate) {
             const dateString = format(selectedDate, "yyyy-MM-dd")
             setOrders(new Map(orders.set(dateString, meal)))
+
+            // Save order data
+            const userId = user?.id;
+            const newOrder = {userId, date: dateString, mealId: meal.id, isEat: true}
+            console.log("userId", userId);
+
+            const newOrderData = [...orderData, newOrder]
+
+            setOrderData(newOrderData);
+
+            // Save order to database
+            console.log(orderData);
+            await saveOrder(newOrder);
         }
         setIsMealDialogOpen(false)
     }
 
-    const handleCancelOrder = () => {
+    const handleCancelOrder = async () => {
         if (selectedDate) {
             const dateString = format(selectedDate, "yyyy-MM-dd")
             const newOrders = new Map(orders)
             newOrders.delete(dateString)
             setOrders(newOrders)
+
+            // Remove order data
+            // const userId = "rfpce5licpx96jx" // Replace with actual user ID
+            // const { user} = await validateRequest();
+            const userId = user?.id;
+
+
+            setOrderData(orderData.filter(order => order.date !== dateString || order.userId !== userId))
+            // save to database
+            await deleteOrderByDateAndId(userId, dateString);
         }
         setIsCancelDialogOpen(false)
     }
-
-    // const {user} = await validateRequest();
-    //
-    // if (!user) {
-    //     return redirect("/signin");
-    // }
 
     return (
         <div className="container mx-auto p-4">
@@ -91,7 +119,7 @@ export default function FoodOrder() {
                     Week: {format(nextWeekStart, "MMMM d")} - {format(addDays(nextWeekStart, 6), "MMMM d, yyyy")}</p>
             </header>
 
-            <div className="grid grid-cols-7 gap-2 mb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2 mb-8">
                 {daysToDisplay.map((date, index) => {
                     const dateString = format(date, "yyyy-MM-dd")
                     const isToday = isSameDay(date, currentTime)

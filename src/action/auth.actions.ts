@@ -28,7 +28,7 @@ export async function signUp(
             const hashedPassword = await hash(parsedData.data.password);
             const userId = generateId(15);
 
-            /*const result = */await db.insert(userTable).values({
+            await db.insert(userTable).values({
                 id: userId,
                 username: parsedData.data.username,
                 hashedPassword

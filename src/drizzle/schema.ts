@@ -1,4 +1,5 @@
 import {integer, pgEnum, pgTable, serial, text, timestamp} from "drizzle-orm/pg-core";
+import {boolean} from "drizzle-orm/pg-core/columns/boolean";
 
 // define enum of role
 export const roleEnums = pgEnum("role_enum", ["user", "admin"]);
@@ -23,6 +24,21 @@ export const sessionTable = pgTable("session", {
         mode: "date",
     }).notNull(),
 })
+
+export const ordersTable = pgTable("orders_table", {
+    id: serial("id").primaryKey(),
+    userId: text("user_id")
+        .notNull()
+        .references(() => userTable.id),
+    date: text("date")
+        .notNull(),
+    mealId: integer("meal_id")
+        .notNull(),
+    isEat: boolean("is_eat").notNull().default(false),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+        .$onUpdate(() => new Date()),
+});
 
 // export const postsTable = pgTable("posts_table", {
 //     id: serial("id").primaryKey(),
