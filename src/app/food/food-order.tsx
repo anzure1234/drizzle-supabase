@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import {
     addDays,
@@ -39,31 +38,27 @@ import {
 } from "@/components/ui/alert-dialog";
 import { deleteOrderByDateAndId, saveOrder } from "@/drizzle/actions";
 import { User } from "lucia";
+import { useOrders } from "@/hooks/use-orders";
 
 interface FoodOrderProps {
     user: User;
 }
 
-// const FoodOrder: React.FC<FoodOrderProps> = ({ user }) => {
-//     // component logic
-// };
-
 export default function FoodOrder({ user }: FoodOrderProps) {
-    const [orders, setOrders] = useState<
-        Map<string, { id: number; name: string }>
-    >(new Map());
+    const { data: orderData, error, isLoading } = useOrders();
+
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [isMealDialogOpen, setIsMealDialogOpen] = useState(false);
     const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
     const [currentTime, setCurrentTime] = useState(new Date());
-    const [orderData, setOrderData] = useState<
-        Array<{ userId: string; date: string; mealId: number }>
-    >([]);
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
+
+    if (isLoading) return <div>Loading...</div>;
+    if (error) return <div>Error loading orders</div>;
 
     const meals = [
         {
@@ -98,7 +93,7 @@ export default function FoodOrder({ user }: FoodOrderProps) {
     const handleDateClick = (date: Date) => {
         if (isOrderable(date)) {
             const dateString = format(date, "yyyy-MM-dd");
-            if (orders.has(dateString)) {
+            if (orderData?.find((order) => order.date === dateString)) {
                 setSelectedDate(date);
                 setIsCancelDialogOpen(true);
             } else {
@@ -111,24 +106,14 @@ export default function FoodOrder({ user }: FoodOrderProps) {
     const handleOrderClick = async (meal: { id: number; name: string }) => {
         if (selectedDate) {
             const dateString = format(selectedDate, "yyyy-MM-dd");
-            setOrders(new Map(orders.set(dateString, meal)));
 
-            // Save order data
-            const userId = user?.id;
             const newOrder = {
-                userId,
+                userId: user.id,
                 date: dateString,
                 mealId: meal.id,
                 isEat: true,
             };
-            console.log("userId", userId);
 
-            const newOrderData = [...orderData, newOrder];
-
-            setOrderData(newOrderData);
-
-            // Save order to database
-            console.log(orderData);
             await saveOrder(newOrder);
         }
         setIsMealDialogOpen(false);
@@ -137,23 +122,7 @@ export default function FoodOrder({ user }: FoodOrderProps) {
     const handleCancelOrder = async () => {
         if (selectedDate) {
             const dateString = format(selectedDate, "yyyy-MM-dd");
-            const newOrders = new Map(orders);
-            newOrders.delete(dateString);
-            setOrders(newOrders);
-
-            // Remove order data
-            // const userId = "rfpce5licpx96jx" // Replace with actual user ID
-            // const { user} = await validateRequest();
-            const userId = user?.id;
-
-            setOrderData(
-                orderData.filter(
-                    (order) =>
-                        order.date !== dateString || order.userId !== userId
-                )
-            );
-            // save to database
-            await deleteOrderByDateAndId(userId, dateString);
+            await deleteOrderByDateAndId(user.id, dateString);
         }
         setIsCancelDialogOpen(false);
     };
@@ -176,7 +145,9 @@ export default function FoodOrder({ user }: FoodOrderProps) {
                 {daysToDisplay.map((date, index) => {
                     const dateString = format(date, "yyyy-MM-dd");
                     const isToday = isSameDay(date, currentTime);
-                    const isOrdered = orders.has(dateString);
+                    const isOrdered = orderData?.some(
+                        (order) => order.date === dateString
+                    );
                     const canOrder = isOrderable(date);
                     const isCurrentWeek = isBefore(date, nextWeekStart);
 
@@ -186,7 +157,7 @@ export default function FoodOrder({ user }: FoodOrderProps) {
                                 variant={isOrdered ? "default" : "outline"}
                                 className={`h-24 w-full flex flex-col items-center justify-center ${
                                     isToday ? "border-2 border-primary" : ""
-                                } ${isCurrentWeek ? "bg-gray-100" : ""} ${
+                                } ${
                                     !canOrder
                                         ? "cursor-not-allowed opacity-50"
                                         : ""
@@ -194,7 +165,7 @@ export default function FoodOrder({ user }: FoodOrderProps) {
                                     isOrdered
                                         ? "bg-green-500 hover:bg-green-600"
                                         : ""
-                                } `}
+                                } ${isCurrentWeek ? "bg-gray-100" : ""}`}
                                 onClick={() => handleDateClick(date)}
                                 disabled={!canOrder}
                             >
@@ -255,7 +226,7 @@ export default function FoodOrder({ user }: FoodOrderProps) {
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Hủy đặt cơm</AlertDialogTitle>
+                        <AlertDialogTitle>Cancel Order</AlertDialogTitle>
                         <AlertDialogDescription>
                             Are you sure you want to cancel your order for{" "}
                             {selectedDate &&
@@ -274,12 +245,12 @@ export default function FoodOrder({ user }: FoodOrderProps) {
 
             <div className="mt-8">
                 <h2 className="text-2xl font-bold mb-4">Your Orders</h2>
-                {Array.from(orders).map(([dateString, meal]) => (
-                    <div key={dateString} className="mb-2">
+                {orderData?.map((order) => (
+                    <div key={order.date} className="mb-2">
                         <span className="font-semibold">
-                            {format(new Date(dateString), "EEEE, MMMM d")}:
+                            {format(new Date(order.date), "EEEE, MMMM d")}:
                         </span>{" "}
-                        {meal.name}
+                        {meals.find((meal) => meal.id === order.mealId)?.name}
                     </div>
                 ))}
             </div>

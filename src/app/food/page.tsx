@@ -1,9 +1,10 @@
 import FoodOrder from "@/app/food/food-order";
-import {validateRequest} from "@/lib/lucia/auth";
-import {redirect} from "next/navigation";
+import { validateRequest } from "@/lib/lucia/auth";
+import { redirect } from "next/navigation";
+import OrderAll from "./order-all";
 
 export default async function FoodOrderPage() {
-    const {user} = await validateRequest();
+    const { user } = await validateRequest();
 
     if (!user) {
         return redirect("/signin");
@@ -11,8 +12,8 @@ export default async function FoodOrderPage() {
 
     return (
         <div>
-            <FoodOrder user={user}/>
+            <FoodOrder user={user} />
+            <OrderAll />
         </div>
-    )
-
+    );
 }
