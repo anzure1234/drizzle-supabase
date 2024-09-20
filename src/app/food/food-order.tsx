@@ -39,12 +39,14 @@ import {
 import { deleteOrderByDateAndId, saveOrder } from "@/drizzle/actions";
 import { User } from "lucia";
 import { useOrders } from "@/hooks/use-orders";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface FoodOrderProps {
     user: User;
 }
 
 export default function FoodOrder({ user }: FoodOrderProps) {
+    const queryClient = useQueryClient();
     const { data: orderData, error, isLoading } = useOrders();
 
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -57,6 +59,26 @@ export default function FoodOrder({ user }: FoodOrderProps) {
         return () => clearInterval(timer);
     }, []);
 
+    const saveOrderMutation = useMutation({
+        mutationFn: async (newOrder) => {
+            await saveOrder(newOrder);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(["orders"]);
+            // window.location.reload(); // Refresh the page after saving
+        },
+    });
+
+    const deleteOrderMutation = useMutation({
+        mutationFn: async (dateString) => {
+            await deleteOrderByDateAndId(user.id, dateString);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(["orders"]);
+            // window.location.reload(); // Refresh the page after deletion
+        },
+    });
+
     if (isLoading) return <div>Loading...</div>;
     if (error) return <div>Error loading orders</div>;
 
@@ -66,8 +88,6 @@ export default function FoodOrder({ user }: FoodOrderProps) {
             name: "Grilled Chicken Salad",
             description: "Fresh greens with grilled chicken breast",
         },
-        // {id: 2, name: "Vegetarian Pasta", description: "Penne pasta with mixed vegetables in tomato sauce"},
-        // {id: 3, name: "Fish and Chips", description: "Crispy battered fish with golden fries"},
     ];
 
     const currentWeekStart = startOfWeek(currentTime, { weekStartsOn: 1 });
@@ -114,7 +134,7 @@ export default function FoodOrder({ user }: FoodOrderProps) {
                 isEat: true,
             };
 
-            await saveOrder(newOrder);
+            saveOrderMutation.mutate(newOrder);
         }
         setIsMealDialogOpen(false);
     };
@@ -122,7 +142,7 @@ export default function FoodOrder({ user }: FoodOrderProps) {
     const handleCancelOrder = async () => {
         if (selectedDate) {
             const dateString = format(selectedDate, "yyyy-MM-dd");
-            await deleteOrderByDateAndId(user.id, dateString);
+            deleteOrderMutation.mutate(dateString);
         }
         setIsCancelDialogOpen(false);
     };
@@ -248,8 +268,8 @@ export default function FoodOrder({ user }: FoodOrderProps) {
                 {orderData?.map((order) => (
                     <div key={order.date} className="mb-2">
                         <span className="font-semibold">
-                            {format(new Date(order.date), "EEEE, MMMM d")}:
-                        </span>{" "}
+                            {format(new Date(order.date), "EEEE, MMMM d")}:{" "}
+                        </span>
                         {meals.find((meal) => meal.id === order.mealId)?.name}
                     </div>
                 ))}
