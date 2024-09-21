@@ -1,11 +1,11 @@
-import { getAllOrders } from "@/drizzle/actions";
-import { useQuery } from "@tanstack/react-query";
+import {getAllOrdersById} from "@/drizzle/actions";
+import {useQuery} from "@tanstack/react-query";
 
-export function useOrders() {
+export function useOrders(userId: string) {
     return useQuery({
         queryKey: ["orders"],
         queryFn: async () => {
-            const response = await getAllOrders();
+            const response = await getAllOrdersById(userId);
             return response;
         },
     });

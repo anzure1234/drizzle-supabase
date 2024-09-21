@@ -34,3 +34,9 @@ export async function getAllOrders(): Promise<
 > {
     return db.select().from(ordersTable);
 }
+
+export async function getAllOrdersById(userId: string): Promise<
+    Array<typeof ordersTable.$inferSelect>
+> {
+    return db.select().from(ordersTable).where(eq(ordersTable.userId, userId));
+}

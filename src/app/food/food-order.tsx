@@ -1,31 +1,9 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import {
-    addDays,
-    eachDayOfInterval,
-    format,
-    isAfter,
-    isBefore,
-    isSameDay,
-    isWeekend,
-    set,
-    startOfWeek,
-} from "date-fns";
-import { Button } from "@/components/ui/button";
-import {
-    Card,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
+import React, {useEffect, useState} from "react";
+import {addDays, eachDayOfInterval, format, isAfter, isBefore, isSameDay, isWeekend, set, startOfWeek,} from "date-fns";
+import {Button} from "@/components/ui/button";
+import {Card, CardDescription, CardFooter, CardHeader, CardTitle,} from "@/components/ui/card";
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from "@/components/ui/dialog";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -36,18 +14,18 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { deleteOrderByDateAndId, saveOrder } from "@/drizzle/actions";
-import { User } from "lucia";
-import { useOrders } from "@/hooks/use-orders";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {deleteOrderByDateAndId, saveOrder} from "@/drizzle/actions";
+import {User} from "lucia";
+import {useOrders} from "@/hooks/use-orders";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
 
 interface FoodOrderProps {
     user: User;
 }
 
-export default function FoodOrder({ user }: FoodOrderProps) {
+export default function FoodOrder({user}: FoodOrderProps) {
     const queryClient = useQueryClient();
-    const { data: orderData, error, isLoading } = useOrders();
+    const {data: orderData, error, isLoading} = useOrders(user.id);
 
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [isMealDialogOpen, setIsMealDialogOpen] = useState(false);
@@ -60,22 +38,24 @@ export default function FoodOrder({ user }: FoodOrderProps) {
     }, []);
 
     const saveOrderMutation = useMutation({
-        mutationFn: async (newOrder) => {
+        mutationFn: async (newOrder: {
+            userId: string;
+            date: string;
+            mealId: number;
+        }) => {
             await saveOrder(newOrder);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(["orders"]);
-            // window.location.reload(); // Refresh the page after saving
+            queryClient.invalidateQueries({ queryKey: ["orders"]});
         },
     });
 
     const deleteOrderMutation = useMutation({
-        mutationFn: async (dateString) => {
+        mutationFn: async (dateString: string) => {
             await deleteOrderByDateAndId(user.id, dateString);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(["orders"]);
-            // window.location.reload(); // Refresh the page after deletion
+            queryClient.invalidateQueries({ queryKey: ["orders"]});
         },
     });
 
@@ -90,7 +70,7 @@ export default function FoodOrder({ user }: FoodOrderProps) {
         },
     ];
 
-    const currentWeekStart = startOfWeek(currentTime, { weekStartsOn: 1 });
+    const currentWeekStart = startOfWeek(currentTime, {weekStartsOn: 1});
     const nextWeekStart = addDays(currentWeekStart, 7);
     const daysToDisplay = eachDayOfInterval({
         start: currentWeekStart,
