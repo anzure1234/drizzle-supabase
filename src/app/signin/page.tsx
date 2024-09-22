@@ -1,27 +1,21 @@
 "use client";
 
-import { UserSignUpSchema } from "@/types/user-schema";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useEffect, useRef } from "react";
-import { useFormState } from "react-dom";
-import { signIn, tet } from "@/action/auth.actions";
-import { useToast } from "@/hooks/use-toast";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { redirect } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import {UserSignUpSchema} from "@/types/user-schema";
+import {useForm} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {z} from "zod";
+import {useEffect, useRef} from "react";
+import {useFormState} from "react-dom";
+import {signIn} from "@/action/auth.actions";
+import {useToast} from "@/hooks/use-toast";
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,} from "@/components/ui/card";
+import {Label} from "@/components/ui/label";
+import {Input} from "@/components/ui/input";
+import {Alert, AlertDescription} from "@/components/ui/alert";
+import {redirect, useSearchParams} from "next/navigation";
+import {Button} from "@/components/ui/button";
 import Link from "next/link";
+import {Toaster} from "@/components/ui/toaster";
 
 export default function SignInPage() {
     const form = useForm<z.infer<typeof UserSignUpSchema>>({
@@ -40,9 +34,21 @@ export default function SignInPage() {
         issues: [],
     });
 
-    const { toast } = useToast();
+    const {toast} = useToast();
+    const params = useSearchParams();
 
     useEffect(() => {
+
+
+        if (params.get("error") === "not-admin") {
+            console.log("Not admin");
+            toast({
+                title: "Not Authorized",
+                description: "You are not authorized to access this page.",
+                variant: "destructive",
+            });
+        }
+
         if (state?.user) {
             console.log("State user", state.user);
             toast({
@@ -64,7 +70,7 @@ export default function SignInPage() {
                 variant: "destructive",
             });
         }
-    }, [state, toast]);
+    }, [params, state, toast]);
 
     return (
         <div className="flex items-center justify-center min-h-screen">
@@ -133,6 +139,7 @@ export default function SignInPage() {
                     </p>
                 </CardFooter>
             </Card>
+            <Toaster />
         </div>
     );
 }
